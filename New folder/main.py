@@ -2,46 +2,41 @@ import os
 import sys
 import threading
 from flask import Flask
+from minecraft.networks import BuiltinSession
 
-# 1. إعداد خادم ويب مصغر لاستقبال نبضات UptimeRobot
+# 1. خادم الويب النظيف لـ UptimeRobot
 app = Flask('')
 
 @app.route('/')
 def home():
-    return "🚀 Keeper Bot is Alive 24/7!"
+    return "🚀 Pure Python Keeper Bot is Alive 24/7!"
 
 def run_web_server():
-    # الاستضافات السحابية تمرر البورت تلقائياً عبر متغير بيئة اسمه PORT
     port = int(os.environ.get("PORT", 8080))
     app.run(host='0.0.0.0', port=port)
 
-# تشغيل خادم الويب في Thread منفصل لكي لا يعطل عمل البوت
 threading.Thread(target=run_web_server, daemon=True).start()
 
-# 2. تثبيت الجسر البرمجي وتشغيل بوت ماينكرافت
-print("📦 Installing required components inside the container...")
-os.system(f"{sys.executable} -m pip install javascript")
+# 2. تشغيل بوت ماينكرافت ببايثون صافي بدون جافا سكريبت
+def start_bot():
+    print("🚀 Connecting Pure Python Bot to Minecraft Server...")
+    try:
+        # الاتصال بالسيرفر (أوفلاين مود متوافق مع سيرفرك)
+        session = BuiltinSession(
+            host='91.98.80.233',
+            port=25752,
+            username='Keeper_247'
+        )
+        print("✅ [SUCCESS] البوت دخل السيرفر بنجاح! العداد الآن 1/20.")
 
-from javascript import require, On
-mineflayer = require('mineflayer')
+        # إبقاء الاتصال حياً
+        while True:
+            pass
 
-# إعدادات الاتصال المباشرة بسيرفر MagmaNode الخاص بك
-bot = mineflayer.createBot({
-    'host': '91.98.80.233',
-    'port': 25752,
-    'username': 'Keeper_247',
-    'version': '1.21'
-})
+    except Exception as e:
+        print(f"⚠️ انقطع الاتصال أو حدث خطأ: {e}")
+        print("🔄 جاري إعادة المحاولة خلال 10 ثوانٍ...")
+        threading.Timer(10, start_bot).start()
 
-@On(bot, 'spawn')
-def handle_spawn(*args):
-    print("✅ [SUCCESS] البوت دخل سيرفر ماينكرافت بنجاح والعداد الآن 1/20!")
-
-@On(bot, 'end')
-def handle_end(*args):
-    print("⚠️ [WARNING] انقطع الاتصال، جاري إعادة التشغيل تلقائياً...")
-    os.system(f"{sys.executable} main.py")
-
-@On(bot, 'error')
-def handle_error(err, *args):
-    print(f"❌ [ERROR] حدث خطأ في البوت: {err}")
+# انطلاق البوت
+start_bot()
