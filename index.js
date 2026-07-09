@@ -1,4 +1,5 @@
 const mineflayer = require('mineflayer');
+const http = require('http'); // استدعاء مكتبة الـ HTTP المدمجة
 
 const config = {
     host: 'ameen20131111-bgfc.aternos.me',
@@ -6,6 +7,18 @@ const config = {
     username: 'ForgeKeeper_Bot',
     version: '1.20.1'
 };
+
+// 🌐 كود الـ Web Server الوهمي لحل مشكلة بورت Render
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Minecraft Keeper Bot is running perfectly!\n');
+});
+
+// Render يرسل البورت تلقائياً في المتغير PORT، وإذا لم يجده يفتح 3000
+const RENDER_PORT = process.env.PORT || 3000;
+server.listen(RENDER_PORT, () => {
+    console.log(`🌐 Web Server is listening on port ${RENDER_PORT} to satisfy Render.`);
+});
 
 function createBotInstance() {
     console.log('⏳ Connecting to Aternos Forge Server via protocol spoofing...');
@@ -15,14 +28,13 @@ function createBotInstance() {
         port: config.port,
         username: config.username,
         version: config.version,
-        tag: 'forge' // هذه تخبر السيرفر برمجياً أن البوت يعمل بالفورج
+        tag: 'forge'
     });
 
     bot.on('spawn', () => {
         console.log(`✅ [${bot.username}] Is now online inside the server!`);
     });
 
-    // رسالة شات كل 4 دقائق لمنع طرد الخمول في أثيرنوس
     const afkInterval = setInterval(() => {
         if (bot && bot.entity) {
             bot.chat(`[Keeper] Protection Status: Active.`);
