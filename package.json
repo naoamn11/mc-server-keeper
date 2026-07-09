@@ -8,6 +8,6 @@
   },
   "dependencies": {
     "mineflayer": "^4.20.0",
-    "mineflayer-forge": "^1.0.1"
+    "minecraft-protocol": "^1.47.0"
   }
 }
