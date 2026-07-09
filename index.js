@@ -1,5 +1,5 @@
 const mineflayer = require('mineflayer');
-const http = require('http'); // استدعاء مكتبة الـ HTTP المدمجة
+const http = require('http');
 
 const config = {
     host: 'ameen20131111-bgfc.aternos.me',
@@ -8,49 +8,73 @@ const config = {
     version: '1.20.1'
 };
 
-// 🌐 كود الـ Web Server الوهمي لحل مشكلة بورت Render
+// 🌐 سيرفر الويب الوهمي الخاص بمنصة Render
 const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('Minecraft Keeper Bot is running perfectly!\n');
+    res.end('Minecraft Forge Keeper is Online!\n');
 });
-
-// Render يرسل البورت تلقائياً في المتغير PORT، وإذا لم يجده يفتح 3000
 const RENDER_PORT = process.env.PORT || 3000;
 server.listen(RENDER_PORT, () => {
-    console.log(`🌐 Web Server is listening on port ${RENDER_PORT} to satisfy Render.`);
+    console.log(`🌐 Web Server running on port ${RENDER_PORT}`);
 });
 
 function createBotInstance() {
-    console.log('⏳ Connecting to Aternos Forge Server via protocol spoofing...');
+    console.log('⏳ Connecting to Forge Server with advanced channel spoofing...');
     
     const bot = mineflayer.createBot({
         host: config.host,
         port: config.port,
         username: config.username,
         version: config.version,
-        tag: 'forge'
+    });
+
+    // 🛠️ حقن بروتوكول Forge المخصص للقنوات المرفوضة في الـ Log
+    bot.on('login', () => {
+        const client = bot._client;
+        
+        // القنوات التي اشتكى السيرفر من غيابها في الـ Log الخاص بك
+        const channels = [
+            'citadel:main_channel',
+            'born_in_chaos_v1:born_in_chaos_v1',
+            'obscure_api:obscure_api',
+            'curios:main',
+            'cataclysm:main_channel',
+            'lionfishapi:main_channel',
+            'forge:tier_sorting',
+            'aquamirae:main',
+            'alexsmobs:main_channel',
+            'geckolib:main',
+            'waystones:network'
+        ];
+
+        // إرسال حزمة التسجيل للسيرفر برمجياً لإثبات وجود المودات
+        try {
+            client.write('custom_payload', {
+                channel: 'minecraft:register',
+                data: Buffer.from(channels.join('\0'), 'utf8')
+            });
+            console.log('🚀 Forge Channels successfully injected into handshake!');
+        } catch (err) {
+            console.error('Failed to write forge channels payload:', err.message);
+        }
     });
 
     bot.on('spawn', () => {
-        console.log(`✅ [${bot.username}] Is now online inside the server!`);
+        console.log(`✅ [${bot.username}] bypassed the modcheck and spawned successfully!`);
     });
 
     const afkInterval = setInterval(() => {
         if (bot && bot.entity) {
-            bot.chat(`[Keeper] Protection Status: Active.`);
+            bot.chat(`[Keeper] System Secure.`);
         }
     }, 240000);
 
-    bot.on('error', (err) => {
-        console.error('❌ Error:', err.message);
-    });
+    bot.on('error', (err) => console.error('❌ Error:', err.message));
 
     bot.on('end', (reason) => {
         console.log(`⚠️ Disconnected: ${reason}. Reconnecting in 30s...`);
         clearInterval(afkInterval);
-        setTimeout(() => {
-            createBotInstance();
-        }, 30000);
+        setTimeout(createBotInstance, 30000);
     });
 }
 
