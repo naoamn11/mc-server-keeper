@@ -1,5 +1,5 @@
 const mineflayer = require('mineflayer');
-const forgeHandshake = require('minecraft-protocol-forge');
+const forgeHandshake = require('node-minecraft-protocol-forge');
 const http = require('http');
 
 // ==========================================
@@ -18,18 +18,18 @@ let bot;
 // 2. دالة تشغيل وإدارة البوت
 // ==========================================
 function createBotInstance() {
-    console.log('⏳ جاري تهيئة البوت وحقن بروتوكول Forge المطور...');
+    console.log('⏳ جاري تهيئة البوت وتجهيز بروتوكول Forge لـ SkyFactory...');
     
     bot = mineflayer.createBot(botOptions);
 
-    // [الحل السحري] حقن الـ Forge Handshake رسميًا في العميل قبل الاتصال
-    forgeHandshake}{(bot._client);
+    // حقن بروتوكول الفورج الرسمي لتخطي فحص الـ 217 موداً
+    forgeHandshake(bot._client);
 
     // حدث الدخول والظهور في السيرفر
     bot.on('spawn', () => {
-        console.log(`[${bot.username}] ✅ تم اجتياز فحص المودات والدخول بنجاح إلى SkyFactory!`);
+        console.log(`[${bot.username}] ✅ تم اجتياز فحص المودات والدخول بنجاح!`);
         
-        // منع الـ Kick بسبب الخمول
+        // منع الـ Kick بسبب الخمول (القفز كل دقيقة)
         setInterval(() => {
             if (bot && bot.entity) {
                 bot.setControlState('jump', true);
@@ -38,7 +38,7 @@ function createBotInstance() {
         }, 60000); 
     });
 
-    // نظام إعادة الاتصال عند الريستارت
+    // نظام إعادة الاتصال الذكي
     bot.on('end', () => {
         console.log('⚠️ انقطع الاتصال. جاري إعادة المحاولة بعد 15 ثانية...');
         setTimeout(() => {
