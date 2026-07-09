@@ -1,13 +1,12 @@
 {
   "name": "mc-server-keeper",
   "version": "1.0.0",
-  "description": "Minecraft Server Keeper Bot",
+  "description": "Bot to keep Aternos server active 24/7",
   "main": "index.js",
-  "dependencies": {
-    "express": "^4.19.2",
-    "mineflayer": "^4.21.0"
-  },
   "scripts": {
     "start": "node index.js"
+  },
+  "dependencies": {
+    "mineflayer": "^4.22.0"
   }
 }
