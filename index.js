@@ -1,7 +1,5 @@
 const mineflayer = require('mineflayer');
-const forgePlugin = require('mineflayer-forge').plugin;
 
-// إعدادات الاتصال الخاصة بسيرفرك
 const config = {
     host: 'ameen20131111-bgfc.aternos.me',
     port: 48533,
@@ -10,48 +8,38 @@ const config = {
 };
 
 function createBotInstance() {
-    console.log('⏳ جاري محاولة الاتصال بالسيرفر بروتوكول Forge...');
+    console.log('⏳ Connecting to Aternos Forge Server via protocol spoofing...');
     
     const bot = mineflayer.createBot({
         host: config.host,
         port: config.port,
         username: config.username,
-        version: config.version
+        version: config.version,
+        tag: 'forge' // هذه تخبر السيرفر برمجياً أن البوت يعمل بالفورج
     });
 
-    // حقن بروتوكول الفورج برمجياً لتخطي حظر المودات
-    bot.loadPlugin(forgePlugin);
-
-    // عندما يدخل البوت بنجاح داخل السيرفر
     bot.on('spawn', () => {
-        console.log(`✅ البوت [${bot.username}] دخل السيرفر بنجاح وهو الآن يحرس السيرفر!`);
-        // يكتب في الشات لطرد الخمول
-        bot.chat('Keeper Bot is online and active.');
+        console.log(`✅ [${bot.username}] Is now online inside the server!`);
     });
 
-    // إرسال رسائل دورية كل 4 دقائق لمنع السيرفر من قراءة البوت كخامل (AFK)
+    // رسالة شات كل 4 دقائق لمنع طرد الخمول في أثيرنوس
     const afkInterval = setInterval(() => {
         if (bot && bot.entity) {
-            bot.chat(`[Status] Server Protection Active.`);
+            bot.chat(`[Keeper] Protection Status: Active.`);
         }
     }, 240000);
 
-    // التعامل مع الأخطاء لمنع كراش السكربت
     bot.on('error', (err) => {
-        console.error('❌ حدث خطأ في الاتصال:', err.message);
+        console.error('❌ Error:', err.message);
     });
 
-    // إعادة الاتصال التلقائي في حال تم طرد البوت أو إغلاق السيرفر
     bot.on('end', (reason) => {
-        console.log(`⚠️ انفصل البوت عن السيرفر بسبب: ${reason}`);
-        clearInterval(afkInterval); // إيقاف التوقيت الدوري القديم
-        
-        console.log('🔄 سيتم إعادة محاولة الاتصال بعد 30 ثانية...');
+        console.log(`⚠️ Disconnected: ${reason}. Reconnecting in 30s...`);
+        clearInterval(afkInterval);
         setTimeout(() => {
             createBotInstance();
         }, 30000);
     });
 }
 
-// تشغيل البوت لأول مرة
 createBotInstance();
