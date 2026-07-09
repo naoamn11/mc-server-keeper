@@ -1,13 +1,12 @@
 {
   "name": "mc-server-keeper",
   "version": "1.0.0",
-  "description": "Forge compatible keeper bot",
+  "description": "Clean Forge compatible keeper bot",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "mineflayer": "^4.22.0",
-    "node-minecraft-protocol-forge": "^0.1.1"
+    "mineflayer": "^4.22.0"
   }
 }
