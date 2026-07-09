@@ -8,7 +8,7 @@ const config = {
     version: '1.20.1'
 };
 
-// 🌐 سيرفر ويب مستقر لحماية اتصال Render 24/7
+// 🌐 سيرفر ويب مستقر للحفاظ على استمرارية الخدمة على Render
 const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end('Minecraft Keeper is running clean and stable!\n');
@@ -19,17 +19,22 @@ server.listen(RENDER_PORT, () => {
 });
 
 function createBotInstance() {
-    console.log('⏳ Connecting to server as a clean utility bot...');
+    console.log('⏳ Connecting to server with Forge FML Handshake Identity...');
     
     const bot = mineflayer.createBot({
         host: config.host,
         port: config.port,
         username: config.username,
-        version: config.version
+        version: config.version,
+        // 🔥 السر هنا: إجبار البروتوكول المدمج على تحديد الهوية كـ Forge فوراً
+        clientIdentity: {
+            clientName: 'forge'
+        }
     });
 
     bot.on('spawn', () => {
-        console.log(`✅ [${bot.username}] Connected and spawned inside the server! 🎉`);
+        console.log(`✅ [${bot.username}] Connected and spawned inside the server successfully! 🎉`);
+        bot.chat('Keeper Bot is now online.');
     });
 
     // نظام منع الـ AFK لإرسال رسالة شات كل 4 دقائق
@@ -44,7 +49,7 @@ function createBotInstance() {
     });
 
     bot.on('end', (reason) => {
-        console.log(`⚠️ Disconnected: ${reason}. Reconnecting in 30 seconds...`);
+        console.log(`⚠️ Disconnected due to: ${reason}. Reconnecting in 30 seconds...`);
         clearInterval(afkInterval);
         setTimeout(createBotInstance, 30000);
     });
