@@ -1,7 +1,7 @@
 {
   "name": "mc-server-keeper",
   "version": "1.0.0",
-  "description": "Clean Forge compatible keeper bot",
+  "description": "Forge stabilized keeper bot",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
