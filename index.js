@@ -1,76 +1,57 @@
 const mineflayer = require('mineflayer');
-const http = require('http');
+const forgePlugin = require('mineflayer-forge').plugin;
 
-// ==========================================
-// 1. إعدادات الاتصال المتقدمة لتخطي Forge
-// ==========================================
-const botOptions = {
-    host: 'ameen20131111.aternos.me',
-    port: 18352,
-    username: 'Keeper_Bot',
-    version: '1.12.2',
-    // حقن قيم أمنية وهمية لإجبار مودباك Forge على قبول العميل المكرك
-    auth: 'mojang', 
-    skipValidation: true,
-    clientToken: 'keeper-bot-token-sf4'
+// إعدادات الاتصال الخاصة بسيرفرك
+const config = {
+    host: 'ameen20131111-bgfc.aternos.me',
+    port: 48533,
+    username: 'ForgeKeeper_Bot',
+    version: '1.20.1'
 };
 
-let bot;
-
-// ==========================================
-// 2. دالة تشغيل وإدارة البوت
-// ==========================================
 function createBotInstance() {
-    console.log('⏳ جاري إطلاق البوت وحقن بروتوكول التوافق المطور لـ SkyFactory...');
+    console.log('⏳ جاري محاولة الاتصال بالسيرفر بروتوكول Forge...');
     
-    // تغيير طريقة الاستدعاء لتمرير قيم الـ Offline Mode بشكل صارم
-    botOptions.auth = null; // نلغي التحقق الرسمي ليتحول إلى مكرك كامل متوافق
-    
-    bot = mineflayer.createBot(botOptions);
-
-    // التعامل مع فتح القناة وتخطي الفحص الصامت
-    bot._client.once('connect', () => {
-        console.log('⚙️ تم الربط الشبكي بنجاح، جاري تخطي فحص الـ 217 موداً...');
+    const bot = mineflayer.createBot({
+        host: config.host,
+        port: config.port,
+        username: config.username,
+        version: config.version
     });
 
-    // حدث الظهور والدخول الناجح
+    // حقن بروتوكول الفورج برمجياً لتخطي حظر المودات
+    bot.loadPlugin(forgePlugin);
+
+    // عندما يدخل البوت بنجاح داخل السيرفر
     bot.on('spawn', () => {
-        console.log(`[${bot.username}] 🎉 مبروك! تم اختراق جدار حماية المودباك والدخول بنجاح!`);
-        
-        // منع الـ Kick بسبب الخمول (القفز كل دقيقة)
-        setInterval(() => {
-            if (bot && bot.entity) {
-                bot.setControlState('jump', true);
-                setTimeout(() => bot.setControlState('jump', false), 500);
-            }
-        }, 60000); 
+        console.log(`✅ البوت [${bot.username}] دخل السيرفر بنجاح وهو الآن يحرس السيرفر!`);
+        // يكتب في الشات لطرد الخمول
+        bot.chat('Keeper Bot is online and active.');
     });
 
-    // إعادة الاتصال التلقائي الذكي
-    bot.on('end', () => {
-        console.log('⚠️ انقطع الاتصال أو رفض السيرفر الحزمة. إعادة المحاولة بعد 10 ثوانٍ...');
+    // إرسال رسائل دورية كل 4 دقائق لمنع السيرفر من قراءة البوت كخامل (AFK)
+    const afkInterval = setInterval(() => {
+        if (bot && bot.entity) {
+            bot.chat(`[Status] Server Protection Active.`);
+        }
+    }, 240000);
+
+    // التعامل مع الأخطاء لمنع كراش السكربت
+    bot.on('error', (err) => {
+        console.error('❌ حدث خطأ في الاتصال:', err.message);
+    });
+
+    // إعادة الاتصال التلقائي في حال تم طرد البوت أو إغلاق السيرفر
+    bot.on('end', (reason) => {
+        console.log(`⚠️ انفصل البوت عن السيرفر بسبب: ${reason}`);
+        clearInterval(afkInterval); // إيقاف التوقيت الدوري القديم
+        
+        console.log('🔄 سيتم إعادة محاولة الاتصال بعد 30 ثانية...');
         setTimeout(() => {
             createBotInstance();
-        }, 10000);
-    });
-
-    bot.on('error', (err) => {
-        console.error('❌ خطأ شبكي برميجي:', err.message);
+        }, 30000);
     });
 }
 
 // تشغيل البوت لأول مرة
 createBotInstance();
-
-// ==========================================
-// 3. سيرفر الويب الخاص بمنصة Render
-// ==========================================
-const webPort = process.env.PORT || 10000;
-const server = http.createServer((req, res) => {
-    res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('SkyFactory Forge Stabilized Bot is Live! 🚀\n');
-});
-
-server.listen(webPort, () => {
-    console.log(`🌐 سيرفر الويب مستقر وثابت على المنفذ: ${webPort}`);
-});
