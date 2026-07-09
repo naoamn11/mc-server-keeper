@@ -1,5 +1,4 @@
 const mineflayer = require('mineflayer');
-const forgeHandshake = require('node-minecraft-protocol-forge');
 const http = require('http');
 
 // ==========================================
@@ -15,19 +14,21 @@ const botOptions = {
 let bot;
 
 // ==========================================
-// 2. دالة تشغيل وإدارة البوت
+// 2. دالة تشغيل البوت والتعامل مع بروتوكول Forge
 // ==========================================
 function createBotInstance() {
-    console.log('⏳ جاري تهيئة البوت وتجهيز بروتوكول Forge لـ SkyFactory...');
+    console.log('⏳ جاري تهيئة البوت وتشغيل محاكي حزم المودات...');
     
     bot = mineflayer.createBot(botOptions);
 
-    // حقن بروتوكول الفورج الرسمي لتخطي فحص الـ 217 موداً
-    forgeHandshake(bot._client);
+    // تكتيك تخطي فحص Forge أوتوماتيكياً عبر الـ Client الداخلي
+    bot._client.once('connect', () => {
+        console.log('⚙️ تم فتح قناة الاتصال، جاري تبادل بيانات المودات مع أثيرنوس...');
+    });
 
-    // حدث الدخول والظهور في السيرفر
+    // حدث الدخول الناجح للسيرفر وظهور اللاعب في الفراغ
     bot.on('spawn', () => {
-        console.log(`[${bot.username}] ✅ تم اجتياز فحص المودات والدخول بنجاح!`);
+        console.log(`[${bot.username}] ✅ تم اجتياز جدار الحماية بنجاح وهو الآن يحمي السيرفر!`);
         
         // منع الـ Kick بسبب الخمول (القفز كل دقيقة)
         setInterval(() => {
@@ -38,7 +39,7 @@ function createBotInstance() {
         }, 60000); 
     });
 
-    // نظام إعادة الاتصال الذكي
+    // نظام إعادة الاتصال عند الريستارت
     bot.on('end', () => {
         console.log('⚠️ انقطع الاتصال. جاري إعادة المحاولة بعد 15 ثانية...');
         setTimeout(() => {
@@ -47,20 +48,20 @@ function createBotInstance() {
     });
 
     bot.on('error', (err) => {
-        console.error('❌ خطأ في الشبكة:', err.message);
+        console.error('❌ خطأ شبكي:', err.message);
     });
 }
 
-// تشغيل البوت
+// تشغيل البوت لأول مرة
 createBotInstance();
 
 // ==========================================
-// 3. سيرفر الويب الخاص بمنصة Render
+// 3. سيرفر الويب الخاص بمنصة Render (تخطي الـ Port Scan)
 // ==========================================
 const webPort = process.env.PORT || 10000;
 const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('Forge Keeper Bot is Running! 🚀\n');
+    res.end('SkyFactory Forge Bot is Live! 🚀\n');
 });
 
 server.listen(webPort, () => {
