@@ -1,17 +1,20 @@
-// تفعيل طباعة حزم البروتوكول لمعرفة التفاصيل الدقيقة للأخطاء
+// 1. تفعيل وضع التشخيص الشبكي في البداية قبل استدعاء المكتبات
 process.env.DEBUG = 'bedrock-protocol';
 
 const express = require('express');
 const bedrock = require('bedrock-protocol');
 
-// 1. تجاوز فحص الإصدارات في المكتبة (Monkey Patching)
+// 2. تصحيح خريطة الإصدارات برقم بروتوكول مطبق صحيح (1001)
 try {
     const options = require('bedrock-protocol/src/options');
-    const highestProtocol = Math.max(...Object.values(options.Versions));
     
-    options.Versions['1.26.40'] = highestProtocol;
-    options.Versions['1.26.43'] = highestProtocol;
-    console.log(`🔧 تم تحديث مكتبة البروتوكول لدعم 1.26.40/1.26.43 برقم بروتوكول: ${highestProtocol}`);
+    // ربط الإصدارات الحديثة ببروتوكول 1.26.30 المعتمد (1001)
+    const validProtocol = options.Versions['1.26.30'] || 1001;
+    
+    options.Versions['1.26.40'] = validProtocol;
+    options.Versions['1.26.43'] = validProtocol;
+    
+    console.log(`🔧 تم ضبط بروتوكول الإصدارات 1.26.40/1.26.43 على الرقم الصحيح: ${validProtocol}`);
 } catch (e) {
     console.log('⚠️ تعذر تعديل خيارات المكتبة:', e.message);
 }
@@ -44,13 +47,17 @@ function connectBot() {
             skipPing: false
         });
 
-        // التعامل مع حزمة المودات والملحقات تلقائياً لتفادي الطرد
+        // الاستجابة التلقائية لطلب المودات/Resource Packs من السيرفر
         botClient.on('resource_packs_info', (packet) => {
-            console.log('📦 استلام حزمة المودات من السيرفر، جاري إرسال الموافقة التلقائية...');
-            botClient.write('resource_pack_client_response', {
-                response_status: 'completed',
-                resourcepackids: []
-            });
+            console.log('📦 استلام حزمة المودات من السيرفر، جاري إرسال القبول...');
+            try {
+                botClient.write('resource_pack_client_response', {
+                    response_status: 'completed',
+                    resourcepackids: []
+                });
+            } catch (err) {
+                console.log('⚠️ خطأ أثناء الرد على حزمة المودات:', err.message);
+            }
         });
 
         botClient.on('join', () => {
