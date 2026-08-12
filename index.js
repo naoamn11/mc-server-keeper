@@ -4,7 +4,6 @@ const bedrock = require('bedrock-protocol');
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// 1. خادم الويب الأساسي لمنع Render من النوم (تستعمله UptimeRobot)
 app.get('/', (req, res) => {
     res.send('Minecraft Bedrock Bot is active and running!');
 });
@@ -25,30 +24,21 @@ function connectBot() {
             port: 34416,
             username: 'AternosBot247',
             offline: true,
-            connectTimeout: 30000
+            connectTimeout: 30000,
+            // بيانات إضافية لمحاكاة دخول لاعب مجاني حقيقي
+            profilesFolder: false
         });
 
-        // عند نجاح الاتصال المبدئي
         botClient.on('join', () => {
-            console.log('✅ نجح البوت في الاتصال بالسيرفر!');
+            console.log('✅ نجح البوت في تسجيل الدخول للأنظمة!');
         });
 
-        // عند دخول البوت إلى العالم
         botClient.on('spawn', () => {
-            console.log('🎮 البوت متواجد الآن داخل العالم بنجاح.');
-        });
-
-        // التقاط أي حزمة قطع اتصال أو طرد توضح السبب
-        botClient.on('disconnect', (packet) => {
-            console.log('⚠️ تم فصل البوت من قبل السيرفر. التفاصيل:', JSON.stringify(packet));
-        });
-
-        botClient.on('kick', (reason) => {
-            console.log('❌ تم طرد البوت من السيرفر. السبب:', reason);
+            console.log('🎮 البوت متواجد الآن داخل العالم بنجاح 24/7!');
         });
 
         botClient.on('error', (err) => {
-            console.log('❌ حدث خطأ في الاتصال:', err.message || err);
+            console.log('❌ خطأ اتصال:', err.message || err);
         });
 
         botClient.on('close', () => {
@@ -57,7 +47,7 @@ function connectBot() {
         });
 
     } catch (error) {
-        console.log('❌ خطأ أثناء إنشاء كائن البوت:', error);
+        console.log('❌ خطأ في النظام:', error);
         setTimeout(reconnect, 10000);
     }
 }
