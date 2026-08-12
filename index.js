@@ -4,7 +4,7 @@ const bedrock = require('bedrock-protocol');
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// خادم ويب بسيط لـ Render و UptimeRobot
+// 1. خادم الويب الأساسي لمنع Render من النوم (تستعمله UptimeRobot)
 app.get('/', (req, res) => {
     res.send('Minecraft Bedrock Bot is active and running!');
 });
@@ -14,45 +14,58 @@ app.listen(PORT, () => {
     connectBot();
 });
 
+let botClient = null;
+
 function connectBot() {
-    console.log('جاري محاولة الاتصال بالسيرفر...');
+    console.log('🔄 جاري محاولة الاتصال بالسيرفر...');
 
-    const client = bedrock.createClient({
-        host: 'ameen20131111-Y522.aternos.me',
-        port: 34416,
-        username: 'AternosBot247',
-        offline: true,
-        skipPing: true
-    });
+    try {
+        botClient = bedrock.createClient({
+            host: 'ameen20131111-Y522.aternos.me',
+            port: 34416,
+            username: 'AternosBot247',
+            offline: true,
+            connectTimeout: 30000
+        });
 
-    client.on('join', () => {
-        console.log('✅ نجح اتصال البوت بسيرفر ماين كرافت!');
-    });
+        // عند نجاح الاتصال المبدئي
+        botClient.on('join', () => {
+            console.log('✅ نجح البوت في الاتصال بالسيرفر!');
+        });
 
-    client.on('spawn', () => {
-        console.log('🎮 البوت دخل عالم اللعبة بنجاح!');
-        
-        setInterval(() => {
-            try {
-                client.queue('text', {
-                    type: 'chat',
-                    needs_translation: false,
-                    source_name: client.username,
-                    xuid: '',
-                    platform_chat_id: '',
-                    message: 'I am active!'
-                });
-            } catch (e) {}
-        }, 30000);
-    });
+        // عند دخول البوت إلى العالم
+        botClient.on('spawn', () => {
+            console.log('🎮 البوت متواجد الآن داخل العالم بنجاح.');
+        });
 
-    // طباعة تفاصيل الخطأ كاملاً لمعرفة سبب الرفض
-    client.on('error', (err) => {
-        console.log('❌ تفاصيل خطأ الاتصال:', err);
-    });
+        // التقاط أي حزمة قطع اتصال أو طرد توضح السبب
+        botClient.on('disconnect', (packet) => {
+            console.log('⚠️ تم فصل البوت من قبل السيرفر. التفاصيل:', JSON.stringify(packet));
+        });
 
-    client.on('close', () => {
-        console.log('⚠️ انقطع اتصال البوت، سيتم إعادة المحاولة خلال 10 ثوانٍ...');
-        setTimeout(connectBot, 10000);
-    });
+        botClient.on('kick', (reason) => {
+            console.log('❌ تم طرد البوت من السيرفر. السبب:', reason);
+        });
+
+        botClient.on('error', (err) => {
+            console.log('❌ حدث خطأ في الاتصال:', err.message || err);
+        });
+
+        botClient.on('close', () => {
+            console.log('🔌 أُغلق الاتصال. سيتم إعادة المحاولة خلال 10 ثوانٍ...');
+            setTimeout(reconnect, 10000);
+        });
+
+    } catch (error) {
+        console.log('❌ خطأ أثناء إنشاء كائن البوت:', error);
+        setTimeout(reconnect, 10000);
+    }
+}
+
+function reconnect() {
+    if (botClient) {
+        botClient.removeAllListeners();
+        botClient = null;
+    }
+    connectBot();
 }
