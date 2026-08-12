@@ -16,13 +16,13 @@ app.listen(PORT, () => {
 
 // 2. كود الاتصال بسيرفر Aternos Bedrock الخاص بك
 function connectBot() {
-    console.حاول('جاري محاولة الاتصال بالسيرفر...');
+    console.log('جاري محاولة الاتصال بالسيرفر...');
 
     const client = bedrock.createClient({
         host: 'ameen20131111-Y522.aternos.me', // عنوان سيرفرك من الصورة
         port: 34416,                         // منفذ سيرفرك من الصورة
         username: 'AternosBot247',           // اسم البوت الذي سيظهر في السيرفر
-        offline: true                        // لتجاوز التحقق الرسمي (Offline Mode)
+        offline: true                        // لتجاوز التحقق الرسمي
     });
 
     client.on('join', () => {
