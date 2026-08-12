@@ -1,6 +1,20 @@
 const express = require('express');
 const bedrock = require('bedrock-protocol');
 
+// 1. تجاوز فحص الإصدارات في المكتبة (Monkey Patching)
+try {
+    const options = require('bedrock-protocol/src/options');
+    // جلب أعلى رقم بروتوكول مدعوم حالياً في المكتبة
+    const highestProtocol = Math.max(...Object.values(options.Versions));
+    
+    // إجبار المكتبة على قبول إصدارات السيرفر وتعيين أعلى بروتوكول لها
+    options.Versions['1.26.40'] = highestProtocol;
+    options.Versions['1.26.43'] = highestProtocol;
+    console.log(`🔧 تم تحديث مكتبة البروتوكول لدعم 1.26.40/1.26.43 برقم بروتوكول: ${highestProtocol}`);
+} catch (e) {
+    console.log('⚠️ تعذر تعديل خيارات المكتبة تلقائياً:', e.message);
+}
+
 const app = express();
 const PORT = process.env.PORT || 10000;
 
@@ -24,13 +38,12 @@ function connectBot() {
             port: 34416,
             username: 'AternosBot247',
             offline: true,
-            connectTimeout: 30000,
-            // بيانات إضافية لمحاكاة دخول لاعب مجاني حقيقي
-            profilesFolder: false
+            version: '1.26.40', // تحديد الإصدار بعد حقنه في الخيارات
+            connectTimeout: 30000
         });
 
         botClient.on('join', () => {
-            console.log('✅ نجح البوت في تسجيل الدخول للأنظمة!');
+            console.log('✅ نجح البوت في الاتصال والتسجيل!');
         });
 
         botClient.on('spawn', () => {
@@ -47,7 +60,7 @@ function connectBot() {
         });
 
     } catch (error) {
-        console.log('❌ خطأ في النظام:', error);
+        console.log('❌ خطأ في كود الاتصال:', error.message || error);
         setTimeout(reconnect, 10000);
     }
 }
