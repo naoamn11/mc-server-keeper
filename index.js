@@ -22,12 +22,33 @@ function connectBot() {
         port: 34416,
         username: 'AternosBot247',
         offline: true,
-        // إعداد إضافي لتجاوز التحقق من الإصدار في حال استمرار المشكلة
-        skipPing: true 
+        skipPing: true
     });
 
     client.on('join', () => {
         console.log('✅ نجح اتصال البوت بسيرفر ماين كرافت!');
+    });
+
+    // إرسال تفاعل دوري لمنع طرد البوت بسبب الخمول
+    client.on('spawn', () => {
+        console.log('🎮 البوت دخل عالم اللعبة بنجاح، جارٍ تفعيل الحماية من الطرد...');
+        
+        // إرسال حركة بسيطة أو رسالة كل 30 ثانية لتأكيد النشاط
+        setInterval(() => {
+            try {
+                // محاولة إرسال أمر أو حركة إن أمكن، أو إبقاء الاتصال نشطاً
+                client.queue('text', {
+                    type: 'chat',
+                    needs_translation: false,
+                    source_name: client.username,
+                    xuid: '',
+                    platform_chat_id: '',
+                    message: 'I am active!' // رسالة في الشات لتأكيد أنه غير خامل (يمكنك حذفها لاحقاً)
+                });
+            } catch (e) {
+                // تجاهل الأخطاء البسيطة لكي لا يتوقف السكريبت
+            }
+        }, 30000);
     });
 
     client.on('error', (err) => {
