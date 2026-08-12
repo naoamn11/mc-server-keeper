@@ -1,18 +1,19 @@
+// تفعيل طباعة حزم البروتوكول لمعرفة التفاصيل الدقيقة للأخطاء
+process.env.DEBUG = 'bedrock-protocol';
+
 const express = require('express');
 const bedrock = require('bedrock-protocol');
 
 // 1. تجاوز فحص الإصدارات في المكتبة (Monkey Patching)
 try {
     const options = require('bedrock-protocol/src/options');
-    // جلب أعلى رقم بروتوكول مدعوم حالياً في المكتبة
     const highestProtocol = Math.max(...Object.values(options.Versions));
     
-    // إجبار المكتبة على قبول إصدارات السيرفر وتعيين أعلى بروتوكول لها
     options.Versions['1.26.40'] = highestProtocol;
     options.Versions['1.26.43'] = highestProtocol;
     console.log(`🔧 تم تحديث مكتبة البروتوكول لدعم 1.26.40/1.26.43 برقم بروتوكول: ${highestProtocol}`);
 } catch (e) {
-    console.log('⚠️ تعذر تعديل خيارات المكتبة تلقائياً:', e.message);
+    console.log('⚠️ تعذر تعديل خيارات المكتبة:', e.message);
 }
 
 const app = express();
@@ -38,8 +39,18 @@ function connectBot() {
             port: 34416,
             username: 'AternosBot247',
             offline: true,
-            version: '1.26.40', // تحديد الإصدار بعد حقنه في الخيارات
-            connectTimeout: 30000
+            version: '1.26.40',
+            connectTimeout: 30000,
+            skipPing: false
+        });
+
+        // التعامل مع حزمة المودات والملحقات تلقائياً لتفادي الطرد
+        botClient.on('resource_packs_info', (packet) => {
+            console.log('📦 استلام حزمة المودات من السيرفر، جاري إرسال الموافقة التلقائية...');
+            botClient.write('resource_pack_client_response', {
+                response_status: 'completed',
+                resourcepackids: []
+            });
         });
 
         botClient.on('join', () => {
