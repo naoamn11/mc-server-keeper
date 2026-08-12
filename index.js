@@ -1,58 +1,40 @@
-const mineflayer = require('mineflayer');
-const http = require('http');
+const express = require('express');
+const bedrock = require('bedrock-protocol');
 
-const config = {
-    host: 'ameen20131111-bgfc.aternos.me',
-    port: 48533,
-    username: 'ForgeKeeper_Bot',
-    version: '1.20.1'
-};
+const app = express();
+const PORT = process.env.PORT || 10000;
 
-// 🌐 سيرفر ويب مستقر للحفاظ على استمرارية الخدمة على Render
-const server = http.createServer((req, res) => {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('Minecraft Keeper is running clean and stable!\n');
-});
-const RENDER_PORT = process.env.PORT || 3000;
-server.listen(RENDER_PORT, () => {
-    console.log(`🌐 Web Server active on port ${RENDER_PORT}`);
+// 1. خادم الويب الأساسي لمنع Render من النوم (تستعمله UptimeRobot)
+app.get('/', (req, res) => {
+    res.send('Minecraft Bedrock Bot is active and running!');
 });
 
-function createBotInstance() {
-    console.log('⏳ Connecting to server with Forge FML Handshake Identity...');
-    
-    const bot = mineflayer.createBot({
-        host: config.host,
-        port: config.port,
-        username: config.username,
-        version: config.version,
-        // 🔥 السر هنا: إجبار البروتوكول المدمج على تحديد الهوية كـ Forge فوراً
-        clientIdentity: {
-            clientName: 'forge'
-        }
+app.listen(PORT, () => {
+    console.log(`Web server is running on port ${PORT}`);
+    connectBot();
+});
+
+// 2. كود الاتصال بسيرفر Aternos Bedrock الخاص بك
+function connectBot() {
+    console.حاول('جاري محاولة الاتصال بالسيرفر...');
+
+    const client = bedrock.createClient({
+        host: 'ameen20131111-Y522.aternos.me', // عنوان سيرفرك من الصورة
+        port: 34416,                         // منفذ سيرفرك من الصورة
+        username: 'AternosBot247',           // اسم البوت الذي سيظهر في السيرفر
+        offline: true                        // لتجاوز التحقق الرسمي (Offline Mode)
     });
 
-    bot.on('spawn', () => {
-        console.log(`✅ [${bot.username}] Connected and spawned inside the server successfully! 🎉`);
-        bot.chat('Keeper Bot is now online.');
+    client.on('join', () => {
+        console.log('✅ نجح اتصال البوت بسيرفر ماين كرافت!');
     });
 
-    // نظام منع الـ AFK لإرسال رسالة شات كل 4 دقائق
-    const afkInterval = setInterval(() => {
-        if (bot && bot.entity) {
-            bot.chat(`[Keeper] Protection Status: Active.`);
-        }
-    }, 240000);
-
-    bot.on('error', (err) => {
-        console.error('❌ Connection Error:', err.message);
+    client.on('error', (err) => {
+        console.log('❌ حدث خطأ في الاتصال:', err);
     });
 
-    bot.on('end', (reason) => {
-        console.log(`⚠️ Disconnected due to: ${reason}. Reconnecting in 30 seconds...`);
-        clearInterval(afkInterval);
-        setTimeout(createBotInstance, 30000);
+    client.on('close', () => {
+        console.log('⚠️ انقطع اتصال البوت، سيتم إعادة المحاولة خلال 10 ثوانٍ...');
+        setTimeout(connectBot, 10000); // إعادة محاولة الدخول تلقائياً إذا فصل السيرفر
     });
 }
-
-createBotInstance();
