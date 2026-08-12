@@ -29,30 +29,26 @@ function connectBot() {
         console.log('✅ نجح اتصال البوت بسيرفر ماين كرافت!');
     });
 
-    // إرسال تفاعل دوري لمنع طرد البوت بسبب الخمول
     client.on('spawn', () => {
-        console.log('🎮 البوت دخل عالم اللعبة بنجاح، جارٍ تفعيل الحماية من الطرد...');
+        console.log('🎮 البوت دخل عالم اللعبة بنجاح!');
         
-        // إرسال حركة بسيطة أو رسالة كل 30 ثانية لتأكيد النشاط
         setInterval(() => {
             try {
-                // محاولة إرسال أمر أو حركة إن أمكن، أو إبقاء الاتصال نشطاً
                 client.queue('text', {
                     type: 'chat',
                     needs_translation: false,
                     source_name: client.username,
                     xuid: '',
                     platform_chat_id: '',
-                    message: 'I am active!' // رسالة في الشات لتأكيد أنه غير خامل (يمكنك حذفها لاحقاً)
+                    message: 'I am active!'
                 });
-            } catch (e) {
-                // تجاهل الأخطاء البسيطة لكي لا يتوقف السكريبت
-            }
+            } catch (e) {}
         }, 30000);
     });
 
+    // طباعة تفاصيل الخطأ كاملاً لمعرفة سبب الرفض
     client.on('error', (err) => {
-        console.log('❌ حدث خطأ في الاتصال:', err);
+        console.log('❌ تفاصيل خطأ الاتصال:', err);
     });
 
     client.on('close', () => {
